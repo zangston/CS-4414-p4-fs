@@ -79,7 +79,31 @@ int main(int argc, char *argv[])
     }
     
     // Free I-node entries
-    
+    // Free I-node entries
+    for(int i = 0; i < num_groups; i++) 
+    {
+        // Seek to the beginning of the i-node bitmap for this group
+        fseek(file, group.bg_inode_bitmap * 1024, SEEK_SET);
+
+        // Read in the i-node bitmap
+        __u8 inode_bitmap[super_block.s_inodes_per_group / 8];
+        fread(inode_bitmap, sizeof(__u8), super_block.s_inodes_per_group / 8, file);
+
+        // Loop through each bit in the bitmap
+        for(int j = 0; j < (int) super_block.s_inodes_per_group; j++) 
+        {
+            // Calculate the byte and bit indices for this inode
+            int byte_index = j / 8;
+            int bit_index = j % 8;
+
+            // Check if the bit is set
+            if((inode_bitmap[byte_index] & (1 << bit_index)) == 0) 
+            {
+                // Bit is not set, inode is free
+                printf("IFREE,%d\n", i * super_block.s_inodes_per_group + j + 1);
+            }
+        }
+    }
     
     // I-node summary
 
