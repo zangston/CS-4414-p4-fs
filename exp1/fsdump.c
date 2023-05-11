@@ -40,7 +40,19 @@ int main(int argc, char *argv[])
             super_block.s_first_ino);
 
     // Group summary
-    
+    int num_groups = super_block.s_blocks_count / super_block.s_blocks_per_group + 1;
+    struct ext2_group_desc group;
+    for(int i = 0; i < num_groups; i++) {
+        fseek(file, 1024 + sizeof(super_block) + i*sizeof(group), SEEK_SET);
+        fread(&group, sizeof(group), 1, file);
+        int blocks_in_group = super_block.s_blocks_per_group;
+        if(i == num_groups - 1) {
+            blocks_in_group = super_block.s_blocks_count % super_block.s_blocks_per_group;
+        }
+        printf("GROUP,%d,%d,%d,%d,%d,%d,%d,%d\n", i, blocks_in_group, super_block.s_inodes_per_group,
+            group.bg_free_blocks_count, group.bg_free_inodes_count, group.bg_block_bitmap,
+            group.bg_inode_bitmap, group.bg_inode_table);
+    }
 
     // Free block entries
 
