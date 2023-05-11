@@ -27,13 +27,16 @@ int main(int argc, char *argv[])
     }
 
     // Superblock summary
+
+    int EXT2_BLOCK_SIZE = 1024;
+
     struct ext2_super_block super_block;
-    fseek(file, 1024, SEEK_SET);
+    fseek(file, EXT2_BLOCK_SIZE, SEEK_SET);
     fread(&super_block, sizeof(super_block), 1, file);
     printf("SUPERBLOCK,%d,%d,%d,%d,%d,%d,%d\n",
             super_block.s_blocks_count,
             super_block.s_inodes_count,
-            1024 << super_block.s_log_block_size,
+            EXT2_BLOCK_SIZE << super_block.s_log_block_size,
             super_block.s_inode_size,
             super_block.s_blocks_per_group,
             super_block.s_inodes_per_group,
@@ -59,7 +62,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < num_groups; i++) 
     {
         // Seek to free block bitmap
-        fseek(file, 1024 * (group.bg_block_bitmap + i * super_block.s_blocks_per_group / 8), SEEK_SET);
+        fseek(file, EXT2_BLOCK_SIZE * (group.bg_block_bitmap + i * super_block.s_blocks_per_group / 8), SEEK_SET);
 
         // Read in free block bitmap
         char *bitmap = malloc(super_block.s_blocks_per_group / 8);
@@ -79,11 +82,10 @@ int main(int argc, char *argv[])
     }
     
     // Free I-node entries
-    // Free I-node entries
     for(int i = 0; i < num_groups; i++) 
     {
         // Seek to the beginning of the i-node bitmap for this group
-        fseek(file, group.bg_inode_bitmap * 1024, SEEK_SET);
+        fseek(file, group.bg_inode_bitmap * EXT2_BLOCK_SIZE, SEEK_SET);
 
         // Read in the i-node bitmap
         __u8 inode_bitmap[super_block.s_inodes_per_group / 8];
@@ -106,7 +108,7 @@ int main(int argc, char *argv[])
     }
     
     // I-node summary
-
+    
 
     // Directory entries
 
