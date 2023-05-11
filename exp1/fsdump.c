@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <fcntl.h>
 #include "ext2_fs.h"
 
@@ -29,6 +28,16 @@ int main(int argc, char *argv[])
 
     // Superblock summary
     struct ext2_super_block super_block;
+    fseek(file, 1024, SEEK_SET);
+    fread(&super_block, sizeof(super_block), 1, file);
+    printf("SUPERBLOCK,%d,%d,%d,%d,%d,%d,%d\n",
+            super_block.s_blocks_count,
+            super_block.s_inodes_count,
+            1024 << super_block.s_log_block_size,
+            super_block.s_inode_size,
+            super_block.s_blocks_per_group,
+            super_block.s_inodes_per_group,
+            super_block.s_first_ino);
 
     // Group summary
     
