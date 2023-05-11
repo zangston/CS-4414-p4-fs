@@ -27,7 +27,26 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // Superblock summary
+    struct ext2_super_block super_block;
+
+    // Group summary
     
+
+    // Free block entries
+
+    
+    // Free I-node entries
+
+    
+    // I-node summary
+
+
+    // Directory entries
+
+
+    // Indirect block references
+
 
     // Close .img file
     fclose(file);
