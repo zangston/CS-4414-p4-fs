@@ -55,7 +55,28 @@ int main(int argc, char *argv[])
     }
 
     // Free block entries
+    // Scan free block bitmaps
+    for (int i = 0; i < num_groups; i++) 
+    {
+        // Seek to free block bitmap
+        fseek(file, 1024 * (group.bg_block_bitmap + i * super_block.s_blocks_per_group / 8), SEEK_SET);
 
+        // Read in free block bitmap
+        char *bitmap = malloc(super_block.s_blocks_per_group / 8);
+        fread(bitmap, super_block.s_blocks_per_group / 8, 1, file);
+
+        // Print out free blocks
+        for (int j = 0; j < (int) super_block.s_blocks_per_group; j++) 
+        {
+            int byte = j / 8;
+            int bit = j % 8;
+            if ((bitmap[byte] & (1 << bit)) == 0) {
+                printf("BFREE,%d\n", i * super_block.s_blocks_per_group + j + 1);
+            }
+        }
+
+    free(bitmap);
+    }
     
     // Free I-node entries
 
