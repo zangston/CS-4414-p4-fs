@@ -47,11 +47,13 @@ int main(int argc, char *argv[])
     // Group summary
     int num_groups = super_block.s_blocks_count / super_block.s_blocks_per_group + 1;
     struct ext2_group_desc group;
-    for(int i = 0; i < num_groups; i++) {
+    for(int i = 0; i < num_groups; i++) 
+    {
         fseek(file, 1024 + sizeof(super_block) + i*sizeof(group), SEEK_SET);
         fread(&group, sizeof(group), 1, file);
         int blocks_in_group = super_block.s_blocks_per_group;
-        if(i == num_groups - 1) {
+        if(i == num_groups - 1) 
+        {
             blocks_in_group = super_block.s_blocks_count % super_block.s_blocks_per_group;
         }
         printf("GROUP,%d,%d,%d,%d,%d,%d,%d,%d\n", i, blocks_in_group, super_block.s_inodes_per_group,
@@ -75,7 +77,8 @@ int main(int argc, char *argv[])
         {
             int byte = j / 8;
             int bit = j % 8;
-            if ((bitmap[byte] & (1 << bit)) == 0) {
+            if ((bitmap[byte] & (1 << bit)) == 0) 
+            {
                 printf("BFREE,%d\n", i * super_block.s_blocks_per_group + j + 1);
             }
         }
@@ -110,7 +113,8 @@ int main(int argc, char *argv[])
     }
     
     // I-node summary
-    for (int i = 0; i < num_groups; i++) {
+    for (int i = 0; i < num_groups; i++) 
+    {
         // Seek to the beginning of the i-node table for this group
         fseek(file, group.bg_inode_table * EXT2_BLOCK_SIZE, SEEK_SET);
 
@@ -119,13 +123,17 @@ int main(int argc, char *argv[])
             struct ext2_inode inode;
             fread(&inode, sizeof(inode), 1, file);
 
-            if (inode.i_mode != 0 && inode.i_links_count != 0) {
+            if (inode.i_mode != 0 && inode.i_links_count != 0) 
+            {
                 char file_type = '?';
-                if (S_ISDIR(inode.i_mode)) {
+                if (S_ISDIR(inode.i_mode)) 
+                {
                     file_type = 'd';
-                } else if (S_ISREG(inode.i_mode)) {
+                } else if (S_ISREG(inode.i_mode)) 
+                {
                     file_type = 'f';
-                } else if (S_ISLNK(inode.i_mode)) {
+                } else if (S_ISLNK(inode.i_mode)) 
+                {
                     file_type = 'l';
                 }
                 printf("INODE,%d,%c,%o,%d,%d,%d,", i * super_block.s_inodes_per_group + j + 1, file_type, inode.i_mode & 0x0FFF,
@@ -146,14 +154,15 @@ int main(int argc, char *argv[])
                 printf("%s,%s,%s,", ctime, mtime, atime);
 
                 printf("%d,%d", inode.i_size, inode.i_blocks / 2);
-                for (int k = 0; k < 15; k++) {
+                for (int k = 0; k < 15; k++) 
+                {
                     printf(",%d", inode.i_block[k]);
                 }
                 printf("\n");
             }
         }
     }
-    
+
     // Close .img file
     fclose(file);
 
