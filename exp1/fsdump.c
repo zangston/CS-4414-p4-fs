@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include "ext2_fs.h"
+#include <time.h>
+#include <sys/stat.h>
 
 int main(int argc, char *argv[])
 {
@@ -108,14 +110,50 @@ int main(int argc, char *argv[])
     }
     
     // I-node summary
+    for (int i = 0; i < num_groups; i++) {
+        // Seek to the beginning of the i-node table for this group
+        fseek(file, group.bg_inode_table * EXT2_BLOCK_SIZE, SEEK_SET);
+
+        // Loop through each i-node in the table
+        for (int j = 0; j < (int) super_block.s_inodes_per_group; j++) {
+            struct ext2_inode inode;
+            fread(&inode, sizeof(inode), 1, file);
+
+            if (inode.i_mode != 0 && inode.i_links_count != 0) {
+                char file_type = '?';
+                if (S_ISDIR(inode.i_mode)) {
+                    file_type = 'd';
+                } else if (S_ISREG(inode.i_mode)) {
+                    file_type = 'f';
+                } else if (S_ISLNK(inode.i_mode)) {
+                    file_type = 'l';
+                }
+                printf("INODE,%d,%c,%o,%d,%d,%d,", i * super_block.s_inodes_per_group + j + 1, file_type, inode.i_mode & 0x0FFF,
+                    inode.i_uid, inode.i_gid, inode.i_links_count);
+
+                char ctime[20];
+                char mtime[20];
+                char atime[20];
+
+                time_t ctime_raw = inode.i_ctime;
+                time_t mtime_raw = inode.i_mtime;
+                time_t atime_raw = inode.i_atime;
+
+                strftime(ctime, 20, "%m/%d/%y %H:%M:%S", localtime(&ctime_raw));
+                strftime(mtime, 20, "%m/%d/%y %H:%M:%S", localtime(&mtime_raw));
+                strftime(atime, 20, "%m/%d/%y %H:%M:%S", localtime(&atime_raw));
+
+                printf("%s,%s,%s,", ctime, mtime, atime);
+
+                printf("%d,%d", inode.i_size, inode.i_blocks / 2);
+                for (int k = 0; k < 15; k++) {
+                    printf(",%d", inode.i_block[k]);
+                }
+                printf("\n");
+            }
+        }
+    }
     
-
-    // Directory entries
-
-
-    // Indirect block references
-
-
     // Close .img file
     fclose(file);
 
